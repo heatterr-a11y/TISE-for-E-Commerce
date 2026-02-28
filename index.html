@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TISE | Predict Cart Abandonment Before It Happens</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>TISE API | Temporal Intent Engine for E-commerce</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -23,7 +23,9 @@
             --gray: #64748b;
             --success: #10b981;
             --warning: #f59e0b;
-            --code-bg: #1e1b4b;
+            --error: #ef4444;
+            --code-bg: #0f0f1e;
+            --code-bg-2: #1a1a2e;
             --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
             --gradient-2: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             --glow: 0 0 40px rgba(99, 102, 241, 0.3);
@@ -583,7 +585,7 @@
             max-width: 1400px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 280px 1fr;
+            grid-template-columns: 300px 1fr;
             gap: 3rem;
         }
         
@@ -591,6 +593,8 @@
             position: sticky;
             top: 100px;
             height: fit-content;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
         }
         
         .api-nav {
@@ -598,6 +602,7 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 16px;
             padding: 1.5rem;
+            margin-bottom: 1rem;
         }
         
         .api-nav-title {
@@ -626,7 +631,7 @@
             font-size: 0.9rem;
             transition: all 0.2s;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
         
         .api-nav-list a:hover, .api-nav-list a.active {
@@ -638,14 +643,17 @@
             display: inline-block;
             padding: 0.15rem 0.4rem;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
             margin-right: 0.5rem;
         }
         
         .method.post { background: rgba(16, 185, 129, 0.2); color: var(--success); }
         .method.get { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+        .method.put { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .method.delete { background: rgba(239, 68, 68, 0.2); color: var(--error); }
         .method.ws { background: rgba(236, 72, 153, 0.2); color: var(--secondary); }
+        .method.patch { background: rgba(139, 92, 246, 0.2); color: var(--accent); }
         
         .api-content {
             space-y: 3rem;
@@ -689,7 +697,7 @@
         
         .code-tabs {
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem;
         }
         
         .code-tab {
@@ -699,14 +707,20 @@
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 500;
-            padding: 0.25rem 0;
-            transition: color 0.2s;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s;
             font-family: 'JetBrains Mono', monospace;
+            border-radius: 6px;
         }
         
         .code-tab.active {
             color: var(--primary);
-            border-bottom: 2px solid var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .code-tab:hover:not(.active) {
+            color: var(--light);
+            background: rgba(255, 255, 255, 0.05);
         }
         
         .copy-btn {
@@ -737,8 +751,8 @@
         .code-content pre {
             margin: 0;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            line-height: 1.6;
+            font-size: 0.85rem;
+            line-height: 1.7;
             color: #e2e8f0;
         }
         
@@ -753,6 +767,8 @@
         .comment { color: #64748b; font-style: italic; }
         .function { color: #60a5fa; }
         .operator { color: #fbbf24; }
+        .class-name { color: #f472b6; }
+        .property { color: #93c5fd; }
         
         /* Endpoint Cards */
         .endpoint-card {
@@ -770,13 +786,14 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+            flex-wrap: wrap;
         }
         
         .endpoint-method {
             padding: 0.4rem 0.8rem;
             border-radius: 6px;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             font-family: 'JetBrains Mono', monospace;
         }
@@ -791,6 +808,21 @@
             color: var(--primary);
         }
         
+        .endpoint-method.put {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .endpoint-method.delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+        
+        .endpoint-method.patch {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent);
+        }
+        
         .endpoint-method.ws {
             background: rgba(236, 72, 153, 0.2);
             color: var(--secondary);
@@ -798,7 +830,7 @@
         
         .endpoint-path {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: white;
         }
         
@@ -865,6 +897,7 @@
             display: flex;
             gap: 1rem;
             margin-bottom: 0.5rem;
+            align-items: center;
         }
         
         .response-status {
@@ -881,7 +914,113 @@
         
         .response-status.error {
             background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
+            color: var(--error);
+        }
+        
+        /* SDK Section */
+        .sdk-section {
+            padding: 6rem 5%;
+            background: rgba(15, 23, 42, 0.3);
+        }
+        
+        .sdk-grid {
+            max-width: 1400px;
+            margin: 3rem auto 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+        
+        .sdk-card {
+            background: var(--code-bg);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .sdk-header {
+            padding: 1.5rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .sdk-icon {
+            font-size: 2rem;
+        }
+        
+        .sdk-info h4 {
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+        
+        .sdk-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .sdk-install {
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .install-command {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--success);
+        }
+        
+        .sdk-content {
+            padding: 1.5rem;
+        }
+        
+        /* OpenAPI Section */
+        .openapi-section {
+            padding: 4rem 5%;
+            background: var(--darker);
+        }
+        
+        .openapi-spec {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--code-bg);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .spec-header {
+            padding: 1.5rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .spec-meta {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .spec-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .spec-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .spec-value {
+            font-weight: 600;
+            color: white;
         }
         
         /* Features Grid */
@@ -1262,6 +1401,49 @@
             display: inline-block;
         }
         
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.operational {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: currentColor;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Rate Limit Box */
+        .rate-limit-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .rate-limit-box h4 {
+            color: var(--warning);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
         /* Mobile Menu */
         .mobile-menu-btn {
             display: none;
@@ -1319,10 +1501,15 @@
             .api-sidebar {
                 position: relative;
                 top: 0;
+                max-height: none;
             }
             
             .tech-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .sdk-grid {
+                grid-template-columns: 1fr;
             }
         }
         
@@ -1363,6 +1550,11 @@
             .tech-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .spec-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
         }
     </style>
 </head>
@@ -1374,6 +1566,7 @@
         <ul class="nav-links">
             <li><a href="#how-it-works">How It Works</a></li>
             <li><a href="#api-docs">API Docs</a></li>
+            <li><a href="#sdks">SDKs</a></li>
             <li><a href="#features">Features</a></li>
             <li><a href="#pricing">Pricing</a></li>
         </ul>
@@ -1488,68 +1681,74 @@
         <div class="section-header">
             <span class="section-tag">API Reference</span>
             <h2>Developer Documentation</h2>
-            <p class="section-subtitle">Production-ready REST API and WebSocket streams. Deploy in 30 minutes with our FastAPI backend.</p>
+            <p class="section-subtitle">Production-ready REST API, WebSocket streams, and comprehensive SDKs. Deploy in 30 minutes.</p>
+            <div style="margin-top: 1.5rem;">
+                <span class="status-badge operational">All Systems Operational</span>
+            </div>
         </div>
         
         <div class="api-container">
             <aside class="api-sidebar">
                 <div class="api-nav">
-                    <div class="api-nav-title">Endpoints</div>
+                    <div class="api-nav-title">Core Endpoints</div>
                     <ul class="api-nav-list">
                         <li><a href="#endpoint-ingest" class="active"><span class="method post">POST</span>/v1/events/ingest</a></li>
                         <li><a href="#endpoint-intent"><span class="method get">GET</span>/v1/intent/{user_id}</a></li>
                         <li><a href="#endpoint-journey"><span class="method get">GET</span>/v1/journey/{user_id}</a></li>
-                        <li><a href="#endpoint-webhooks"><span class="method post">POST</span>/v1/webhooks/subscribe</a></li>
-                        <li><a href="#endpoint-websocket"><span class="method ws">WS</span>/v1/ws/{client_id}</a></li>
+                        <li><a href="#endpoint-batch"><span class="method post">POST</span>/v1/events/batch</a></li>
+                        <li><a href="#endpoint-predict"><span class="method get">GET</span>/v1/predict</a></li>
                     </ul>
                 </div>
                 
-                <div class="api-nav" style="margin-top: 1rem;">
-                    <div class="api-nav-title">SDKs & Tools</div>
+                <div class="api-nav">
+                    <div class="api-nav-title">Webhooks & Real-time</div>
                     <ul class="api-nav-list">
-                        <li><a href="#sdk-js">JavaScript SDK</a></li>
-                        <li><a href="#sdk-shopify">Shopify Integration</a></li>
-                        <li><a href="#sdk-webhooks">Webhook Payloads</a></li>
+                        <li><a href="#endpoint-webhooks"><span class="method post">POST</span>/v1/webhooks</a></li>
+                        <li><a href="#endpoint-websocket"><span class="method ws">WS</span>/v1/ws/{client_id}</a></li>
+                        <li><a href="#endpoint-sse"><span class="method get">GET</span>/v1/sse</a></li>
+                    </ul>
+                </div>
+                
+                <div class="api-nav">
+                    <div class="api-nav-title">Analytics & Data</div>
+                    <ul class="api-nav-list">
+                        <li><a href="#endpoint-analytics"><span class="method get">GET</span>/v1/analytics</a></li>
+                        <li><a href="#endpoint-reports"><span class="method get">GET</span>/v1/reports</a></li>
+                        <li><a href="#endpoint-exports"><span class="method post">POST</span>/v1/exports</a></li>
+                        <li><a href="#endpoint-sessions"><span class="method get">GET</span>/v1/sessions</a></li>
+                    </ul>
+                </div>
+                
+                <div class="api-nav">
+                    <div class="api-nav-title">Management</div>
+                    <ul class="api-nav-list">
+                        <li><a href="#endpoint-rules"><span class="method put">PUT</span>/v1/rules</a></li>
+                        <li><a href="#endpoint-config"><span class="method patch">PATCH</span>/v1/config</a></li>
+                        <li><a href="#endpoint-apikeys"><span class="method get">GET</span>/v1/api-keys</a></li>
                     </ul>
                 </div>
             </aside>
             
             <div class="api-content">
-                <!-- Quick Start -->
-                <div class="api-section">
-                    <h3>Quick Start</h3>
-                    <p>Get up and running with TISE in under 5 minutes. Install our JavaScript snippet and start streaming behavioral events.</p>
+                <!-- Authentication -->
+                <div class="api-section" id="auth">
+                    <h3>Authentication</h3>
+                    <p>TISE uses API keys passed in the Authorization header. All requests must be made over HTTPS.</p>
                     
                     <div class="code-block">
                         <div class="code-header">
-                            <div class="code-tabs">
-                                <button class="code-tab active">JavaScript</button>
-                                <button class="code-tab">npm</button>
-                                <button class="code-tab">Shopify</button>
-                            </div>
+                            <span style="color: var(--gray); font-size: 0.85rem;">Header Format</span>
                             <button class="copy-btn">📋 Copy</button>
                         </div>
                         <div class="code-content">
-                            <pre><code><span class="comment">// Initialize TISE tracker</span>
-<span class="keyword">const</span> <span class="function">tise</span> = <span class="keyword">new</span> <span class="function">TISE</span>({
-  <span class="string">apiKey</span>: <span class="string">'tise_live_xxxxxxxx'</span>,
-  <span class="string">shopId</span>: <span class="string">'your-shop.myshopify.com'</span>
-});
-
-<span class="comment">// Start tracking automatically captures:</span>
-<span class="comment">// - Mouse movements & velocity</span>
-<span class="comment">// - Scroll depth & patterns</span>
-<span class="comment">// - Time on element hover</span>
-<span class="comment">// - Form field interactions</span>
-<span class="function">tise</span>.<span class="function">init</span>();
-
-<span class="comment">// Manual event tracking (optional)</span>
-<span class="function">tise</span>.<span class="function">track</span>(<span class="string">'add_to_cart'</span>, {
-  <span class="string">product_id</span>: <span class="string">'12345'</span>,
-  <span class="string">value</span>: <span class="number">99.99</span>,
-  <span class="string">currency</span>: <span class="string">'USD'</span>
-});</code></pre>
+                            <pre><code>Authorization: Bearer tise_live_xxxxxxxxxxxxxxxx
+X-API-Version: 2024-03-07</code></pre>
                         </div>
+                    </div>
+                    
+                    <div class="rate-limit-box">
+                        <h4>⚠️ Rate Limits</h4>
+                        <p style="color: var(--gray); font-size: 0.9rem;">Starter: 100 req/min | Growth: 1,000 req/min | Enterprise: Unlimited</p>
                     </div>
                 </div>
                 
@@ -1562,14 +1761,14 @@
                         </div>
                         <div class="endpoint-body">
                             <p class="endpoint-description">
-                                Stream behavioral events to TISE for real-time analysis. Events are processed within 50ms and fed into our temporal prediction model. Supports batch ingestion up to 100 events per request.
+                                Stream behavioral events to TISE for real-time analysis. Events are processed within 50ms and fed into our temporal prediction model. Supports single or batch ingestion.
                             </p>
                             
-                            <h4 style="margin: 1.5rem 0 1rem; color: white;">Request Parameters</h4>
+                            <h4 style="margin: 1.5rem 0 1rem; color: white;">Request Body</h4>
                             <table class="param-table">
                                 <thead>
                                     <tr>
-                                        <th>Parameter</th>
+                                        <th>Field</th>
                                         <th>Type</th>
                                         <th>Required</th>
                                         <th>Description</th>
@@ -1577,16 +1776,10 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td><span class="param-name">events</span></td>
-                                        <td><span class="param-type">array</span></td>
-                                        <td><span class="param-required">Required</span></td>
-                                        <td>Array of behavioral events (max 100)</td>
-                                    </tr>
-                                    <tr>
                                         <td><span class="param-name">user_id</span></td>
                                         <td><span class="param-type">string</span></td>
                                         <td><span class="param-required">Required</span></td>
-                                        <td>Unique visitor identifier (UUID)</td>
+                                        <td>Unique visitor identifier (UUID v4)</td>
                                     </tr>
                                     <tr>
                                         <td><span class="param-name">session_id</span></td>
@@ -1595,17 +1788,28 @@
                                         <td>Current session identifier</td>
                                     </tr>
                                     <tr>
-                                        <td><span class="param-name">timestamp</span></td>
-                                        <td><span class="param-type">integer</span></td>
+                                        <td><span class="param-name">events</span></td>
+                                        <td><span class="param-type">array</span></td>
+                                        <td><span class="param-required">Required</span></td>
+                                        <td>Array of behavioral events</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="param-name">metadata</span></td>
+                                        <td><span class="param-type">object</span></td>
                                         <td><span class="param-optional">Optional</span></td>
-                                        <td>Unix timestamp (ms), defaults to now</td>
+                                        <td>Additional context (device, referrer)</td>
                                     </tr>
                                 </tbody>
                             </table>
                             
                             <div class="code-block">
                                 <div class="code-header">
-                                    <span style="color: var(--gray); font-size: 0.85rem;">Example Request</span>
+                                    <div class="code-tabs">
+                                        <button class="code-tab active">cURL</button>
+                                        <button class="code-tab">JavaScript</button>
+                                        <button class="code-tab">Python</button>
+                                        <button class="code-tab">Ruby</button>
+                                    </div>
                                     <button class="copy-btn">📋 Copy</button>
                                 </div>
                                 <div class="code-content">
@@ -1633,8 +1837,20 @@
         "type": "hover",
         "element": ".checkout-btn",
         "duration": 3200
+      },
+      {
+        "type": "cart_update",
+        "action": "add_item",
+        "product_id": "prod_123",
+        "value": 99.99,
+        "currency": "USD"
       }
-    ]
+    ],
+    "metadata": {
+      "user_agent": "Mozilla/5.0...",
+      "referrer": "https://google.com",
+      "page_url": "https://store.com/product"
+    }
   }'</span></code></pre>
                                 </div>
                             </div>
@@ -1642,13 +1858,13 @@
                             <div class="response-block">
                                 <div class="response-header">
                                     <span class="response-status success">200 OK</span>
-                                    <span style="color: var(--gray); font-size: 0.85rem;">Prediction included if risk detected</span>
+                                    <span style="color: var(--gray); font-size: 0.85rem;">Includes prediction if risk detected</span>
                                 </div>
                                 <div class="code-block" style="margin-top: 0.5rem;">
                                     <div class="code-content">
                                         <pre><code>{
   <span class="string">"status"</span>: <span class="string">"success"</span>,
-  <span class="string">"processed"</span>: <span class="number">3</span>,
+  <span class="string">"processed"</span>: <span class="number">4</span>,
   <span class="string">"prediction"</span>: {
     <span class="string">"risk_score"</span>: <span class="number">0.87</span>,
     <span class="string">"will_abandon"</span>: <span class="keyword">true</span>,
@@ -1656,11 +1872,61 @@
     <span class="string">"predicted_at"</span>: <span class="string">"2024-03-07T18:20:00Z"</span>,
     <span class="string">"estimated_abandonment"</span>: <span class="string">"2024-03-07T18:22:00Z"</span>,
     <span class="string">"recommended_action"</span>: <span class="string">"exit_intent_discount"</span>,
-    <span class="string">"cart_value"</span>: <span class="number">156.00</span>
+    <span class="string">"intervention_window"</span>: <span class="number">120</span>,
+    <span class="string">"cart_value"</span>: <span class="number">156.00</span>,
+    <span class="string">"factors"</span>: [
+      <span class="string">"rapid_scroll_velocity"</span>,
+      <span class="string">"checkout_hover_no_click"</span>,
+      <span class="string">"tab_switching"</span>
+    ]
   },
-  <span class="string">"webhook_triggered"</span>: <span class="keyword">true</span>
+  <span class="string">"webhook_triggered"</span>: <span class="keyword">true</span>,
+  <span class="string">"webhook_id"</span>: <span class="string">"whk_abc123"</span>
 }</code></pre>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Endpoint: Batch Ingest -->
+                <div class="api-section" id="endpoint-batch">
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="endpoint-method post">POST</span>
+                            <span class="endpoint-path">/v1/events/batch</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p class="endpoint-description">
+                                High-throughput batch ingestion for historical data or bulk imports. Process up to 10,000 events per request. Ideal for backfilling data or migrating from other platforms.
+                            </p>
+                            
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span style="color: var(--gray); font-size: 0.85rem;">Batch Request Example</span>
+                                    <button class="copy-btn">📋 Copy</button>
+                                </div>
+                                <div class="code-content">
+                                    <pre><code>{
+  <span class="string">"batches"</span>: [
+    {
+      <span class="string">"user_id"</span>: <span class="string">"usr_001"</span>,
+      <span class="string">"session_id"</span>: <span class="string">"ses_001"</span>,
+      <span class="string">"events"</span>: [...]
+    },
+    {
+      <span class="string">"user_id"</span>: <span class="string">"usr_002"</span>,
+      <span class="string">"session_id"</span>: <span class="string">"ses_002"</span>,
+      <span class="string">"events"</span>: [...]
+    }
+  ],
+  <span class="string">"options"</span>: {
+    <span class="string">"skip_validation"</span>: <span class="keyword">false</span>,
+    <span class="string">"generate_predictions"</span>: <span class="keyword">true</span>,
+    <span class="string">"webhook_batch_size"</span>: <span class="number">100</span>
+  }
+}</code></pre>
                                 </div>
                             </div>
                         </div>
@@ -1679,18 +1945,6 @@
                                 Retrieve the current intent prediction for a specific user. Returns real-time abandonment probability, recommended interventions, and temporal journey analysis.
                             </p>
                             
-                            <h4 style="margin: 1.5rem 0 1rem; color: white;">Path Parameters</h4>
-                            <table class="param-table">
-                                <tbody>
-                                    <tr>
-                                        <td><span class="param-name">user_id</span></td>
-                                        <td><span class="param-type">string</span></td>
-                                        <td><span class="param-required">Required</span></td>
-                                        <td>Unique user identifier</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            
                             <h4 style="margin: 1.5rem 0 1rem; color: white;">Query Parameters</h4>
                             <table class="param-table">
                                 <tbody>
@@ -1698,22 +1952,24 @@
                                         <td><span class="param-name">include_history</span></td>
                                         <td><span class="param-type">boolean</span></td>
                                         <td><span class="param-optional">Optional</span></td>
-                                        <td>Include 24h behavioral history</td>
+                                        <td>Include 24h behavioral history (default: false)</td>
                                     </tr>
                                     <tr>
                                         <td><span class="param-name">session_only</span></td>
                                         <td><span class="param-type">boolean</span></td>
                                         <td><span class="param-optional">Optional</span></td>
-                                        <td>Limit to current session only</td>
+                                        <td>Limit to current session only (default: false)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="param-name">format</span></td>
+                                        <td><span class="param-type">string</span></td>
+                                        <td><span class="param-optional">Optional</span></td>
+                                        <td>Response format: "full", "compact", "minimal"</td>
                                     </tr>
                                 </tbody>
                             </table>
                             
                             <div class="code-block">
-                                <div class="code-header">
-                                    <span style="color: var(--gray); font-size: 0.85rem;">Example Response</span>
-                                    <button class="copy-btn">📋 Copy</button>
-                                </div>
                                 <div class="code-content">
                                     <pre><code>{
   <span class="string">"user_id"</span>: <span class="string">"usr_abc123"</span>,
@@ -1722,22 +1978,27 @@
   <span class="string">"abandonment_risk"</span>: <span class="string">"high"</span>,
   <span class="string">"confidence"</span>: <span class="number">0.94</span>,
   <span class="string">"temporal_signals"</span>: {
-    <span class="string">"dwell_time"</span>: <span class="number">245</span>,
+    <span class="string">"dwell_time_ms"</span>: <span class="number">245000</span>,
     <span class="string">"scroll_velocity"</span>: <span class="number">-0.8</span>,
     <span class="string">"mouse_entropy"</span>: <span class="number">0.45</span>,
-    <span class="string">"attention_decay"</span>: <span class="number">0.67</span>
+    <span class="string">"attention_decay_rate"</span>: <span class="number">0.67</span>,
+    <span class="string">"tab_switch_count"</span>: <span class="number">3</span>,
+    <span class="string">"hesitation_score"</span>: <span class="number">0.82</span>
   },
   <span class="string">"predicted_actions"</span>: [
     {
       <span class="string">"action"</span>: <span class="string">"show_exit_intent"</span>,
       <span class="string">"trigger_at"</span>: <span class="string">"2024-03-07T18:21:30Z"</span>,
-      <span class="string">"discount_tier"</span>: <span class="string">"10%"</span>
+      <span class="string">"discount_tier"</span>: <span class="string">"10%"</span>,
+      <span class="string">"urgency_level"</span>: <span class="string">"medium"</span>
     }
   ],
+  <span class="string">"journey_stage"</span>: <span class="string">"checkout_initiated"</span>,
   <span class="string">"cart"</span>: {
     <span class="string">"items"</span>: <span class="number">3</span>,
     <span class="string">"value"</span>: <span class="number">156.00</span>,
-    <span class="string">"currency"</span>: <span class="string">"USD"</span>
+    <span class="string">"currency"</span>: <span class="string">"USD"</span>,
+    <span class="string">"abandonment_value_at_risk"</span>: <span class="number">156.00</span>
   }
 }</code></pre>
                                 </div>
@@ -1746,7 +2007,161 @@
                     </div>
                 </div>
                 
-                <!-- Endpoint: WebSocket -->
+                <!-- Endpoint: Analytics -->
+                <div class="api-section" id="endpoint-analytics">
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="endpoint-method get">GET</span>
+                            <span class="endpoint-path">/v1/analytics</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p class="endpoint-description">
+                                Retrieve comprehensive analytics and metrics. Supports time-series aggregation, cohort analysis, and custom date ranges. Perfect for building custom dashboards.
+                            </p>
+                            
+                            <h4 style="margin: 1.5rem 0 1rem; color: white;">Query Parameters</h4>
+                            <table class="param-table">
+                                <tbody>
+                                    <tr>
+                                        <td><span class="param-name">start_date</span></td>
+                                        <td><span class="param-type">string</span></td>
+                                        <td><span class="param-required">Required</span></td>
+                                        <td>ISO 8601 date (e.g., 2024-03-01)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="param-name">end_date</span></td>
+                                        <td><span class="param-type">string</span></td>
+                                        <td><span class="param-required">Required</span></td>
+                                        <td>ISO 8601 date</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="param-name">metrics</span></td>
+                                        <td><span class="param-type">array</span></td>
+                                        <td><span class="param-optional">Optional</span></td>
+                                        <td>Specific metrics to return</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="param-name">granularity</span></td>
+                                        <td><span class="param-type">string</span></td>
+                                        <td><span class="param-optional">Optional</span></td>
+                                        <td>hour, day, week, month</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <div class="code-block">
+                                <div class="code-content">
+                                    <pre><code>{
+  <span class="string">"period"</span>: {
+    <span class="string">"start"</span>: <span class="string">"2024-03-01"</span>,
+    <span class="string">"end"</span>: <span class="string">"2024-03-07"</span>
+  },
+  <span class="string">"summary"</span>: {
+    <span class="string">"total_carts"</span>: <span class="number">15420</span>,
+    <span class="string">"abandoned_carts"</span>: <span class="number">5234</span>,
+    <span class="string">"recovered_carts"</span>: <span class="number">1832</span>,
+    <span class="string">"recovery_rate"</span>: <span class="number">0.35</span>,
+    <span class="string">"revenue_at_risk"</span>: <span class="number">456780.00</span>,
+    <span class="string">"revenue_recovered"</span>: <span class="number">159873.00</span>,
+    <span class="string">"avg_prediction_accuracy"</span>: <span class="number">0.94</span>
+  },
+  <span class="string">"timeseries"</span>: [
+    {
+      <span class="string">"date"</span>: <span class="string">"2024-03-01"</span>,
+      <span class="string">"carts"</span>: <span class="number">2203</span>,
+      <span class="string">"abandoned"</span>: <span class="number">748</span>,
+      <span class="string">"recovered"</span>: <span class="number">262</span>,
+      <span class="string">"revenue_recovered"</span>: <span class="number">22839.00</span>
+    }
+  ],
+  <span class="string">"top_interventions"</span>: [
+    {
+      <span class="string">"type"</span>: <span class="string">"exit_intent_10"</span>,
+      <span class="string">"triggered"</span>: <span class="number">1240</span>,
+      <span class="string">"converted"</span>: <span class="number">434</span>,
+      <span class="string">"conversion_rate"</span>: <span class="number">0.35</span>
+    }
+  ]
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Endpoint: Reports -->
+                <div class="api-section" id="endpoint-reports">
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="endpoint-method get">GET</span>
+                            <span class="endpoint-path">/v1/reports/{report_type}</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p class="endpoint-description">
+                                Generate detailed reports: cohort analysis, funnel visualization, intervention effectiveness, and predictive accuracy audits.
+                            </p>
+                            
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span style="color: var(--gray); font-size: 0.85rem;">Available Report Types</span>
+                                </div>
+                                <div class="code-content">
+                                    <pre><code><span class="comment"># Cohort retention analysis</span>
+GET /v1/reports/cohort?cohort_date=2024-02-01&periods=30
+
+<span class="comment"># Intervention effectiveness</span>
+GET /v1/reports/interventions?group_by=type
+
+<span class="comment"># Prediction accuracy audit</span>
+GET /v1/reports/accuracy?model_version=v2.1
+
+<span class="comment"># Revenue attribution</span>
+GET /v1/reports/attribution?window=7d</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Endpoint: Exports -->
+                <div class="api-section" id="endpoint-exports">
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="endpoint-method post">POST</span>
+                            <span class="endpoint-path">/v1/exports</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p class="endpoint-description">
+                                Export raw data or aggregated reports in CSV, JSON, or Parquet format. Async processing with webhook notification on completion.
+                            </p>
+                            
+                            <div class="code-block">
+                                <div class="code-content">
+                                    <pre><code>{
+  <span class="string">"format"</span>: <span class="string">"parquet"</span>,
+  <span class="string">"data_type"</span>: <span class="string">"events"</span>,
+  <span class="string">"date_range"</span>: {
+    <span class="string">"start"</span>: <span class="string">"2024-03-01"</span>,
+    <span class="string">"end"</span>: <span class="string">"2024-03-07"</span>
+  },
+  <span class="string">"filters"</span>: {
+    <span class="string">"event_types"</span>: [<span class="string">"cart_update"</span>, <span class="string">"purchase"</span>],
+    <span class="string">"min_cart_value"</span>: <span class="number">50.00</span>
+  },
+  <span class="string">"destination"</span>: {
+    <span class="string">"type"</span>: <span class="string">"s3"</span>,
+    <span class="string">"bucket"</span>: <span class="string">"your-bucket"</span>,
+    <span class="string">"path"</span>: <span class="string">"exports/tise/"</span>
+  },
+  <span class="string">"notify_webhook"</span>: <span class="string">"https://your-app.com/webhooks/export"</span>
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- WebSocket -->
                 <div class="api-section" id="endpoint-websocket">
                     <div class="endpoint-card">
                         <div class="endpoint-header">
@@ -1755,7 +2170,7 @@
                         </div>
                         <div class="endpoint-body">
                             <p class="endpoint-description">
-                                Real-time bidirectional stream for live prediction updates. Connect to receive instant abandonment alerts and send intervention confirmations. Ideal for real-time dashboard updates and instant trigger systems.
+                                Real-time bidirectional stream for live prediction updates. Connect to receive instant abandonment alerts and send intervention confirmations.
                             </p>
                             
                             <div class="code-block">
@@ -1763,105 +2178,126 @@
                                     <div class="code-tabs">
                                         <button class="code-tab active">JavaScript</button>
                                         <button class="code-tab">Python</button>
+                                        <button class="code-tab">Go</button>
+                                        <button class="code-tab">Ruby</button>
                                     </div>
                                     <button class="copy-btn">📋 Copy</button>
                                 </div>
                                 <div class="code-content">
-                                    <pre><code><span class="comment">// Connect to WebSocket stream</span>
-<span class="keyword">const</span> <span class="function">ws</span> = <span class="keyword">new</span> <span class="function">WebSocket</span>(
+                                    <pre><code><span class="keyword">const</span> <span class="function">ws</span> = <span class="keyword">new</span> <span class="function">WebSocket</span>(
   <span class="string">'wss://api.tise.io/v1/ws/your-client-id'</span>,
   [], 
-  { <span class="string">headers</span>: { <span class="string">Authorization</span>: <span class="string">'Bearer tise_live_xxx'</span> } }
+  { 
+    <span class="string">headers</span>: { 
+      <span class="string">Authorization</span>: <span class="string">'Bearer tise_live_xxx'</span>,
+      <span class="string">X-Client-Version</span>: <span class="string">'1.0.0'</span>
+    } 
+  }
 );
 
-<span class="function">ws</span>.<span class="function">onmessage</span> = <span class="keyword">function</span>(<span class="function">event</span>) {
-  <span class="keyword">const</span> <span class="function">data</span> = <span class="function">JSON</span>.<span class="function">parse</span>(<span class="function">event</span>.<span class="string">data</span>);
-  
-  <span class="keyword">if</span> (<span class="function">data</span>.<span class="string">type</span> === <span class="string">'abandonment_alert'</span>) {
-    <span class="comment">// Trigger intervention immediately</span>
-    <span class="function">showExitIntentModal</span>(<span class="function">data</span>.<span class="string">user_id</span>, <span class="function">data</span>.<span class="string">recommended_offer</span>);
-  }
+<span class="function">ws</span>.<span class="function">onopen</span> = () => {
+  <span class="comment">// Subscribe to specific events</span>
+  <span class="function">ws</span>.<span class="function">send</span>(<span class="function">JSON</span>.<span class="function">stringify</span>({
+    <span class="string">action</span>: <span class="string">'subscribe'</span>,
+    <span class="string">channels</span>: [<span class="string">'abandonment_alerts'</span>, <span class="string">'intent_updates'</span>]
+  }));
 };
 
-<span class="comment">// Send intervention confirmation</span>
-<span class="function">ws</span>.<span class="function">send</span>(<span class="function">JSON</span>.<span class="function">stringify</span>({
-  <span class="string">type</span>: <span class="string">'intervention_triggered'</span>,
-  <span class="string">user_id</span>: <span class="string">'usr_abc123'</span>,
-  <span class="string">action</span>: <span class="string">'discount_10_percent'</span>,
-  <span class="string">timestamp</span>: <span class="function">Date</span>.<span class="function">now</span>()
-}));</code></pre>
+<span class="function">ws</span>.<span class="function">onmessage</span> = (<span class="function">event</span>) => {
+  <span class="keyword">const</span> <span class="function">data</span> = <span class="function">JSON</span>.<span class="function">parse</span>(<span class="function">event</span>.<span class="string">data</span>);
+  
+  <span class="keyword">switch</span> (<span class="function">data</span>.<span class="string">type</span>) {
+    <span class="keyword">case</span> <span class="string">'abandonment_alert'</span>:
+      <span class="function">handleAbandonmentRisk</span>(<span class="function">data</span>);
+      <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'intent_update'</span>:
+      <span class="function">updateIntentScore</span>(<span class="function">data</span>);
+      <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'intervention_delivered'</span>:
+      <span class="function">confirmIntervention</span>(<span class="function">data</span>);
+      <span class="keyword">break</span>;
+  }
+};</code></pre>
                                 </div>
                             </div>
                             
-                            <div class="response-block">
-                                <div class="response-header">
-                                    <span class="response-status success">Message Types</span>
-                                </div>
-                                <table class="param-table" style="margin-top: 1rem;">
-                                    <thead>
-                                        <tr>
-                                            <th>Type</th>
-                                            <th>Direction</th>
-                                            <th>Description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><span class="param-name">abandonment_alert</span></td>
-                                            <td>Server → Client</td>
-                                            <td>High-risk user detected, includes prediction data</td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="param-name">intent_update</span></td>
-                                            <td>Server → Client</td>
-                                            <td>Periodic intent score updates (every 5s)</td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="param-name">intervention_triggered</span></td>
-                                            <td>Client → Server</td>
-                                            <td>Confirm intervention deployment</td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="param-name">conversion</span></td>
-                                            <td>Client → Server</td>
-                                            <td>Report successful cart recovery</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <h4 style="margin: 1.5rem 0 1rem; color: white;">Message Types</h4>
+                            <table class="param-table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Direction</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="param-name">abandonment_alert</span></td>
+                                        <td>Server → Client</td>
+                                        <td>High-risk user detected with prediction data</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="param-name">intent_update</span></td>
+                                        <td>Server → Client</td>
+                                        <td>Periodic intent score updates (every 5s)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="param-name">intervention_triggered</span></td>
+                                        <td>Client → Server</td>
+                                        <td>Confirm intervention deployment</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="param-name">conversion</span></td>
+                                        <td>Client → Server</td>
+                                        <td>Report successful cart recovery</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="param-name">heartbeat</span></td>
+                                        <td>Bidirectional</td>
+                                        <td>Keep connection alive (30s interval)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Webhook Integration -->
-                <div class="api-section" id="sdk-webhooks">
+                <!-- Webhooks -->
+                <div class="api-section" id="endpoint-webhooks">
                     <h3>Webhook Integration</h3>
-                    <p>Configure webhooks to receive real-time HTTP callbacks when abandonment predictions are generated. TISE retries failed deliveries with exponential backoff.</p>
+                    <p>Configure webhooks to receive real-time HTTP callbacks. TISE retries failed deliveries with exponential backoff (1s, 2s, 4s, 8s, 16s).</p>
                     
                     <div class="endpoint-card">
                         <div class="endpoint-header">
                             <span class="endpoint-method post">POST</span>
-                            <span class="endpoint-path">/v1/webhooks/subscribe</span>
+                            <span class="endpoint-path">/v1/webhooks</span>
                         </div>
                         <div class="endpoint-body">
                             <div class="code-block">
                                 <div class="code-header">
-                                    <span style="color: var(--gray); font-size: 0.85rem;">Subscribe to Webhook Events</span>
+                                    <span style="color: var(--gray); font-size: 0.85rem;">Create Webhook Subscription</span>
                                     <button class="copy-btn">📋 Copy</button>
                                 </div>
                                 <div class="code-content">
-                                    <pre><code><span class="function">curl</span> -X POST <span class="string">'https://api.tise.io/v1/webhooks/subscribe'</span> \
-  -H <span class="string">'Authorization: Bearer tise_live_xxxxxxxx'</span> \
-  -H <span class="string">'Content-Type: application/json'</span> \
-  -d <span class="string">'{
-    "url": "https://your-store.com/webhooks/tise",
-    "events": ["abandonment.predicted", "cart.recovered", "intervention.clicked"],
-    "secret": "whsec_your_webhook_secret",
-    "metadata": {
-      "store_id": "store_123",
-      "environment": "production"
-    }
-  }'</span></code></pre>
+                                    <pre><code>{
+  <span class="string">"url"</span>: <span class="string">"https://your-store.com/webhooks/tise"</span>,
+  <span class="string">"events"</span>: [
+    <span class="string">"abandonment.predicted"</span>,
+    <span class="string">"abandonment.confirmed"</span>,
+    <span class="string">"cart.recovered"</span>,
+    <span class="string">"intervention.clicked"</span>,
+    <span class="string">"intervention.converted"</span>
+  ],
+  <span class="string">"secret"</span>: <span class="string">"whsec_your_webhook_secret"</span>,
+  <span class="string">"metadata"</span>: {
+    <span class="string">"store_id"</span>: <span class="string">"store_123"</span>,
+    <span class="string">"environment"</span>: <span class="string">"production"</span>
+  },
+  <span class="string">"filter"</span>: {
+    <span class="string">"min_risk_score"</span>: <span class="number">0.7</span>,
+    <span class="string">"min_cart_value"</span>: <span class="number">25.00</span>
+  }
+}</code></pre>
                                 </div>
                             </div>
                             
@@ -1871,12 +2307,14 @@
                                     <pre><code>{
   <span class="string">"event"</span>: <span class="string">"abandonment.predicted"</span>,
   <span class="string">"timestamp"</span>: <span class="string">"2024-03-07T18:20:00.000Z"</span>,
+  <span class="string">"webhook_id"</span>: <span class="string">"whk_abc123"</span>,
   <span class="string">"data"</span>: {
     <span class="string">"user_id"</span>: <span class="string">"usr_abc123"</span>,
     <span class="string">"session_id"</span>: <span class="string">"ses_xyz789"</span>,
     <span class="string">"prediction"</span>: {
       <span class="string">"risk_score"</span>: <span class="number">0.87</span>,
       <span class="string">"confidence"</span>: <span class="number">0.94</span>,
+      <span class="string">"model_version"</span>: <span class="string">"v2.1.0"</span>,
       <span class="string">"estimated_abandonment"</span>: <span class="string">"2024-03-07T18:22:00Z"</span>
     },
     <span class="string">"cart"</span>: {
@@ -1884,52 +2322,296 @@
       <span class="string">"value"</span>: <span class="number">156.00</span>,
       <span class="string">"currency"</span>: <span class="string">"USD"</span>,
       <span class="string">"items"</span>: [
-        { <span class="string">"sku"</span>: <span class="string">"SHOE-001"</span>, <span class="string">"name"</span>: <span class="string">"Running Shoes"</span>, <span class="string">"price"</span>: <span class="number">89.00</span> },
-        { <span class="string">"sku"</span>: <span class="string">"SOCK-002"</span>, <span class="string">"name"</span>: <span class="string">"Sport Socks"</span>, <span class="string">"price"</span>: <span class="number">12.00</span> }
+        { <span class="string">"sku"</span>: <span class="string">"SHOE-001"</span>, <span class="string">"name"</span>: <span class="string">"Running Shoes"</span>, <span class="string">"price"</span>: <span class="number">89.00</span>, <span class="string">"qty"</span>: <span class="number">1</span> },
+        { <span class="string">"sku"</span>: <span class="string">"SOCK-002"</span>, <span class="string">"name"</span>: <span class="string">"Sport Socks"</span>, <span class="string">"price"</span>: <span class="number">12.00</span>, <span class="string">"qty"</span>: <span class="number">2</span> }
       ]
+    },
+    <span class="string">"user"</span>: {
+      <span class="string">"email"</span>: <span class="string">"customer@example.com"</span>,
+      <span class="string">"is_returning"</span>: <span class="keyword">true</span>,
+      <span class="string">"ltv"</span>: <span class="number">450.00</span>
     },
     <span class="string">"recommended_action"</span>: {
       <span class="string">"type"</span>: <span class="string">"exit_intent_modal"</span>,
       <span class="string">"discount_code"</span>: <span class="string">"SAVE10NOW"</span>,
       <span class="string">"discount_percentage"</span>: <span class="number">10</span>,
-      <span class="string">"urgency_message"</span>: <span class="string">"Your cart expires in 15 minutes!"</span>
+      <span class="string">"urgency_message"</span>: <span class="string">"Your cart expires in 15 minutes!"</span>,
+      <span class="string">"expires_in"</span>: <span class="number">900</span>
     }
   }
 }</code></pre>
                                 </div>
                             </div>
+                            
+                            <div class="rate-limit-box" style="margin-top: 1.5rem;">
+                                <h4>🔐 Webhook Security</h4>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Verify webhooks using the X-Tise-Signature header. <a href="#" style="color: var(--primary);">View verification guide →</a></p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Shopify Integration -->
-                <div class="api-section" id="sdk-shopify">
-                    <h3>Shopify Integration</h3>
-                    <p>One-click Shopify installation. Our app automatically injects the tracking script and configures webhooks for cart events.</p>
-                    
-                    <div class="code-block">
-                        <div class="code-header">
-                            <span style="color: var(--gray); font-size: 0.85rem;">Shopify App Installation</span>
-                            <button class="copy-btn">📋 Copy</button>
-                        </div>
-                        <div class="code-content">
-                            <pre><code><span class="comment"># Install via Shopify CLI</span>
-shopify app install tise-cart-recovery
+            </div>
+        </div>
+    </section>
+    
+    <!-- SDKs Section -->
+    <section class="sdk-section" id="sdks">
+        <div class="section-header">
+            <span class="section-tag">SDKs & Libraries</span>
+            <h2>Official SDKs</h2>
+            <p class="section-subtitle">Production-ready SDKs for every major platform. Open source on GitHub.</p>
+        </div>
+        
+        <div class="sdk-grid">
+            <div class="sdk-card">
+                <div class="sdk-header">
+                    <div class="sdk-icon">🟨</div>
+                    <div class="sdk-info">
+                        <h4>JavaScript SDK</h4>
+                        <p>Browser, Node.js, React, Vue</p>
+                    </div>
+                </div>
+                <div class="sdk-install">
+                    <code class="install-command">npm install @tise/sdk-js</code>
+                </div>
+                <div class="sdk-content">
+                    <div class="code-content" style="padding: 0;">
+                        <pre><code><span class="keyword">import</span> { TISE } <span class="keyword">from</span> <span class="string">'@tise/sdk-js'</span>;
 
-<span class="comment"># Or manual webhook configuration</span>
-<span class="function">curl</span> -X POST <span class="string">'https://your-shop.myshopify.com/admin/api/2024-01/webhooks.json'</span> \
-  -H <span class="string">'X-Shopify-Access-Token: {access_token}'</span> \
-  -H <span class="string">'Content-Type: application/json'</span> \
-  -d <span class="string">'{
-    "webhook": {
-      "topic": "carts/update",
-      "address": "https://api.tise.io/v1/shopify/webhook",
-      "format": "json"
-    }
-  }'</span></code></pre>
-                        </div>
+<span class="keyword">const</span> <span class="function">tise</span> = <span class="keyword">new</span> <span class="function">TISE</span>({
+  <span class="string">apiKey</span>: <span class="string">'tise_live_xxx'</span>,
+  <span class="string">autoTrack</span>: <span class="keyword">true</span>,
+  <span class="string">debug</span>: <span class="keyword">false</span>
+});
+
+<span class="comment">// Real-time predictions</span>
+<span class="function">tise</span>.<span class="function">on</span>(<span class="string">'abandonmentRisk'</span>, (<span class="function">prediction</span>) => {
+  <span class="function">console</span>.<span class="function">log</span>(<span class="string">'Risk detected:'</span>, <span class="function">prediction</span>.<span class="string">riskScore</span>);
+});</code></pre>
                     </div>
                 </div>
+            </div>
+            
+            <div class="sdk-card">
+                <div class="sdk-header">
+                    <div class="sdk-icon">🐍</div>
+                    <div class="sdk-info">
+                        <h4>Python SDK</h4>
+                        <p>Django, Flask, FastAPI</p>
+                    </div>
+                </div>
+                <div class="sdk-install">
+                    <code class="install-command">pip install tise-sdk</code>
+                </div>
+                <div class="sdk-content">
+                    <div class="code-content" style="padding: 0;">
+                        <pre><code><span class="keyword">from</span> tise <span class="keyword">import</span> TISEClient
+
+<span class="function">client</span> = <span class="function">TISEClient</span>(
+    <span class="string">api_key</span>=<span class="string">'tise_live_xxx'</span>,
+    <span class="string">environment</span>=<span class="string">'production'</span>
+)
+
+<span class="comment"># Ingest events</span>
+<span class="function">client</span>.<span class="function">events</span>.<span class="function">ingest</span>(
+    <span class="string">user_id</span>=<span class="string">'usr_123'</span>,
+    <span class="string">events</span>=[{<span class="string">'type'</span>: <span class="string">'page_view'</span>}]
+)
+
+<span class="comment"># Get prediction</span>
+<span class="function">prediction</span> = <span class="function">client</span>.<span class="function">intent</span>.<span class="function">get</span>(<span class="string">'usr_123'</span>)</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sdk-card">
+                <div class="sdk-header">
+                    <div class="sdk-icon">💎</div>
+                    <div class="sdk-info">
+                        <h4>Ruby SDK</h4>
+                        <p>Rails, Sinatra</p>
+                    </div>
+                </div>
+                <div class="sdk-install">
+                    <code class="install-command">gem install tise-sdk</code>
+                </div>
+                <div class="sdk-content">
+                    <div class="code-content" style="padding: 0;">
+                        <pre><code><span class="keyword">require</span> <span class="string">'tise'</span>
+
+<span class="function">client</span> = <span class="function">TISE::Client</span>.<span class="function">new</span>(
+  <span class="string">api_key:</span> <span class="string">'tise_live_xxx'</span>
+)
+
+<span class="comment"># Track events</span>
+<span class="function">client</span>.<span class="function">track</span>(<span class="string">'usr_123'</span>, {
+  <span class="string">type:</span> <span class="string">'add_to_cart'</span>,
+  <span class="string">product_id:</span> <span class="string">'prod_456'</span>
+})
+
+<span class="comment"># Webhook verification</span>
+<span class="function">TISE::Webhook</span>.<span class="function">verify</span>(<span class="function">payload</span>, <span class="function">signature</span>)</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sdk-card">
+                <div class="sdk-header">
+                    <div class="sdk-icon">☕</div>
+                    <div class="sdk-info">
+                        <h4>Go SDK</h4>
+                        <p>High-performance backend</p>
+                    </div>
+                </div>
+                <div class="sdk-install">
+                    <code class="install-command">go get github.com/tise/sdk-go</code>
+                </div>
+                <div class="sdk-content">
+                    <div class="code-content" style="padding: 0;">
+                        <pre><code><span class="keyword">import</span> <span class="string">"github.com/tise/sdk-go/tise"</span>
+
+<span class="function">client</span>, <span class="function">_</span> := <span class="function">tise</span>.<span class="function">New</span>(<span class="string">"tise_live_xxx"</span>)
+
+<span class="comment">// Real-time WebSocket</span>
+<span class="function">ws</span>, <span class="function">_</span> := <span class="function">client</span>.<span class="function">WebSocket</span>.<span class="function">Connect</span>(<span class="string">"client_123"</span>)
+
+<span class="keyword">for</span> <span class="function">msg</span> := <span class="keyword">range</span> <span class="function">ws</span>.<span class="function">Messages</span> {
+    <span class="keyword">if</span> <span class="function">msg</span>.<span class="function">Type</span> == <span class="string">"abandonment_alert"</span> {
+        <span class="function">handleAlert</span>(<span class="function">msg</span>.<span class="function">Data</span>)
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sdk-card">
+                <div class="sdk-header">
+                    <div class="sdk-icon">🐘</div>
+                    <div class="sdk-info">
+                        <h4>PHP SDK</h4>
+                        <p>Laravel, Symfony</p>
+                    </div>
+                </div>
+                <div class="sdk-install">
+                    <code class="install-command">composer require tise/sdk-php</code>
+                </div>
+                <div class="sdk-content">
+                    <div class="code-content" style="padding: 0;">
+                        <pre><code><span class="keyword">use</span> <span class="function">TISE\TISEClient</span>;
+
+<span class="function">$client</span> = <span class="keyword">new</span> <span class="function">TISEClient</span>(<span class="string">'tise_live_xxx'</span>);
+
+<span class="comment">// Batch ingest</span>
+<span class="function">$client</span>-><span class="function">events</span>-><span class="function">ingestBatch</span>([
+    [<span class="string">'user_id'</span> => <span class="string">'usr_1'</span>, <span class="string">'events'</span> => [...]],
+    [<span class="string">'user_id'</span> => <span class="string">'usr_2'</span>, <span class="string">'events'</span> => [...]]
+]);</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sdk-card">
+                <div class="sdk-header">
+                    <div class="sdk-icon">🦀</div>
+                    <div class="sdk-info">
+                        <h4>Rust SDK</h4>
+                        <p>Systems programming</p>
+                    </div>
+                </div>
+                <div class="sdk-install">
+                    <code class="install-command">cargo add tise-sdk</code>
+                </div>
+                <div class="sdk-content">
+                    <div class="code-content" style="padding: 0;">
+                        <pre><code><span class="keyword">use</span> <span class="function">tise::TISEClient</span>;
+
+<span class="keyword">let</span> <span class="function">client</span> = <span class="function">TISEClient::new</span>(<span class="string">"tise_live_xxx"</span>)<span class="operator">?</span>;
+
+<span class="comment">// Async prediction</span>
+<span class="keyword">let</span> <span class="function">intent</span> = <span class="function">client</span>
+    .<span class="function">intent</span>()
+    .<span class="function">get</span>(<span class="string">"usr_123"</span>)
+    .<span class="keyword">await</span><span class="operator">?</span>;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- OpenAPI Section -->
+    <section class="openapi-section">
+        <div class="section-header">
+            <span class="section-tag">OpenAPI Specification</span>
+            <h2>Complete API Schema</h2>
+            <p class="section-subtitle">Download our OpenAPI 3.0 spec for auto-generated clients and documentation.</p>
+        </div>
+        
+        <div class="openapi-spec">
+            <div class="spec-header">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.3rem;">TISE API Specification</h3>
+                    <p style="color: var(--gray); margin-top: 0.5rem;">Version 2.1.0 | Updated March 2024</p>
+                </div>
+                <div class="spec-meta">
+                    <div class="spec-item">
+                        <span class="spec-label">Endpoints</span>
+                        <span class="spec-value">24</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Schemas</span>
+                        <span class="spec-value">47</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Format</span>
+                        <span class="spec-value">OpenAPI 3.0</span>
+                    </div>
+                </div>
+                <button class="btn-primary" style="padding: 0.75rem 1.5rem; font-size: 0.9rem;">⬇ Download Spec</button>
+            </div>
+            <div class="code-content" style="max-height: 400px; overflow-y: auto;">
+                <pre><code><span class="property">openapi</span>: <span class="string">3.0.3</span>
+<span class="property">info</span>:
+  <span class="property">title</span>: <span class="string">TISE API</span>
+  <span class="property">version</span>: <span class="number">2.1.0</span>
+  <span class="property">description</span>: <span class="string">Temporal Intent Synchronization Engine for E-commerce</span>
+  
+<span class="property">servers</span>:
+  - <span class="property">url</span>: <span class="string">https://api.tise.io/v1</span>
+    <span class="property">description</span>: <span class="string">Production</span>
+  - <span class="property">url</span>: <span class="string">https://sandbox.api.tise.io/v1</span>
+    <span class="property">description</span>: <span class="string">Sandbox</span>
+
+<span class="property">paths</span>:
+  <span class="property">/events/ingest</span>:
+    <span class="property">post</span>:
+      <span class="property">summary</span>: <span class="string">Ingest behavioral events</span>
+      <span class="property">requestBody</span>:
+        <span class="property">content</span>:
+          <span class="property">application/json</span>:
+            <span class="property">schema</span>:
+              <span class="property">$ref</span>: <span class="string">'#/components/schemas/EventIngestRequest'</span>
+      <span class="property">responses</span>:
+        <span class="string">'200'</span>:
+          <span class="property">description</span>: <span class="string">Events processed successfully</span>
+          <span class="property">content</span>:
+            <span class="property">application/json</span>:
+              <span class="property">schema</span>:
+                <span class="property">$ref</span>: <span class="string">'#/components/schemas/EventIngestResponse'</span>
+                
+<span class="property">components</span>:
+  <span class="property">schemas</span>:
+    <span class="property">EventIngestRequest</span>:
+      <span class="property">type</span>: <span class="string">object</span>
+      <span class="property">required</span>: [<span class="string">user_id</span>, <span class="string">session_id</span>, <span class="string">events</span>]
+      <span class="property">properties</span>:
+        <span class="property">user_id</span>:
+          <span class="property">type</span>: <span class="string">string</span>
+          <span class="property">format</span>: <span class="string">uuid</span>
+        <span class="property">events</span>:
+          <span class="property">type</span>: <span class="string">array</span>
+          <span class="property">items</span>:
+            <span class="property">$ref</span>: <span class="string">'#/components/schemas/BehavioralEvent'</span>
+            </code></pre>
             </div>
         </div>
     </section>
@@ -1939,7 +2621,7 @@ shopify app install tise-cart-recovery
         <div class="section-header">
             <span class="section-tag">Infrastructure</span>
             <h2>Built for Scale</h2>
-            <p class="section-subtitle">Production-grade stack powering millions of predictions daily.</p>
+            <p class="section-subtitle">Enterprise-grade infrastructure powering millions of predictions daily.</p>
         </div>
         
         <div class="tech-grid">
@@ -2136,8 +2818,9 @@ shopify app install tise-cart-recovery
                     document.querySelectorAll('.api-nav-list a').forEach(link => {
                         link.classList.remove('active');
                     });
-                    if (this.classList.contains('code-tab')) return;
-                    this.classList.add('active');
+                    if (this.closest('.api-nav-list')) {
+                        this.classList.add('active');
+                    }
                 }
             });
         });
@@ -2176,13 +2859,39 @@ shopify app install tise-cart-recovery
             });
         });
         
-        // Code tabs
+        // Code tabs switching
         document.querySelectorAll('.code-tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 const parent = this.closest('.code-header');
                 parent.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
+                // Here you would typically switch the code content
             });
+        });
+        
+        // Intersection Observer for API nav highlighting
+        const observerOptions = {
+            root: null,
+            rootMargin: '-100px 0px -80% 0px',
+            threshold: 0
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    document.querySelectorAll('.api-nav-list a').forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === `#${id}`) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.api-section').forEach(section => {
+            observer.observe(section);
         });
     </script>
 </body>
